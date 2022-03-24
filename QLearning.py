@@ -15,9 +15,6 @@ class QLearner:
     qtable: np.ndarray
     scores: list[float]
 
-    max_states: list[int]
-    min_states: list[int]
-
     def __init__(self, env: gym.Env, discrete_space_size: int | list[int], space_limits: list[tuple[int]] = None, alpha: float = 0.1, gama: float = 0.95, epsilon: float = 0.95, decay_rate: float = 0.999):
         self.env = env
         self.alpha = alpha
@@ -49,12 +46,10 @@ class QLearner:
         self.state_space_limits = space_limits
 
     def find_discrete_state_indices(self, observation: list[float]) -> tuple[int]:
+        # since the observation space is continuos, we find the discrete space state indices
+        # by dividing current continuos state value to discrete state step size
         indices = [int(o/s - l/s) for o, (l, _h), s in zip(observation,
                                                            self.state_space_limits, self.discrete_state_steps)]
-        self.max_states = [max((old, new))
-                           for old, new in zip(self.max_states, indices)]
-        self.min_states = [min((old, new))
-                           for old, new in zip(self.min_states, indices)]
         return tuple(indices)
 
     def save_qtable(self, filename: str):
@@ -105,15 +100,12 @@ class QLearner:
                 print(f"Episode {i} : {score}")
                 if i % 10 == 0:
                     print(f"epsilon: {self.epsilon}")
-        if log:
-            print(f"Last epsilon: {self.epsilon}")
-            print("Max visited states : " + str(self.max_states))
-            print("Min visited states : " + str(self.min_states))
 
         avg_scores = np.mean(np.array(self.scores[len(self.scores) % 10:]).reshape(-1, 10), axis=1)
 
-        fig, axs = plt.subplots(1, 2)
-        plt.title("Individual (Left) and 10-Averaged (Right) Scores")
+        fig, axs = plt.subplots(1, 2, figsize=(12,6))
         axs[0].plot(self.scores)
+        axs[0].set_title("Individual Scores")
         axs[1].plot(avg_scores)
+        axs[1].set_title("10-Averaged Scores")
         plt.show()
