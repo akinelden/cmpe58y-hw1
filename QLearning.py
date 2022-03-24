@@ -36,9 +36,6 @@ class QLearner:
         self.qtable = np.zeros(discretization_vector + [env.action_space.n])
         self.scores = []
 
-        self.max_states = [-1000 for i in range(state_space_shape)]
-        self.min_states = [1000 for i in range(state_space_shape)]
-
     def set_finite_state_space_limits(self, space_limits: list[tuple[int]]):
         if space_limits is None:
             space_limits = [(l, h) for l, h in zip(
